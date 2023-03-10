@@ -22,25 +22,32 @@ for i in range(1, 9):
 
 engine.finalize_object()
 
-fname = ('_ZN5numba5typed10listobject13impl_new_list12_3clocals_'
-         '3e3impB2v4B42c8tJTIcFHzwl2ILiXkcBV0KBSmNGHkyiCKJEEwA_'
-         '3dE32typeref_5bListType_5bint64_5d_5dx')
-fnam2 = ('_ZN5numba5typed9typedlist10_make_listB2v3B38c8tJTIcFHzw'
-         'l2ILiXkcBV0KBSgP9CGZpAgA_3dE32typeref_5bListType_5bint64_5d_5dx')
-addr = engine.get_function_address(fnam2)
+fname1 = ('_ZN5numba5typed10listobject13impl_new_list12_3clocals_'
+          '3e3impB2v4B42c8tJTIcFHzwl2ILiXkcBV0KBSmNGHkyiCKJEEwA_'
+          '3dE32typeref_5bListType_5bint64_5d_5dx')
+fname2 = ('_ZN5numba5typed9typedlist10_make_listB2v3B38c8tJTIcFHzw'
+          'l2ILiXkcBV0KBSgP9CGZpAgA_3dE32typeref_5bListType_5bint64_5d_5dx')
+addr1 = engine.get_function_address(fname1)
+addr2 = engine.get_function_address(fname2)
 
-print(f"Function is at 0x{addr:x}")
 print(f"PID is {os.getpid()}")
 
-with tempfile.NamedTemporaryFile() as f:
-    data = (ctypes.c_char*256).from_address(addr)
-    f.write(data)
-    f.flush()
-    objdump_cmd = (f'objdump -D -b binary --adjust-vma=0x{addr:x} '
-                   f'-m aarch64 {f.name}')
-    print(f"Running {objdump_cmd}...")
-    cp = subprocess.run(objdump_cmd.split(' '), capture_output=True)
-    print(cp.stdout.decode())
+
+def disass_function(addr):
+    print(f"Function is at 0x{addr:x}")
+    with tempfile.NamedTemporaryFile() as f:
+        data = (ctypes.c_char*256).from_address(addr)
+        f.write(data)
+        f.flush()
+        objdump_cmd = (f'objdump -D -b binary --adjust-vma=0x{addr:x} '
+                       f'-m aarch64 {f.name}')
+        print(f"Running {objdump_cmd}...")
+        cp = subprocess.run(objdump_cmd.split(' '), capture_output=True)
+        print(cp.stdout.decode())
+
+
+disass_function(addr1)
+disass_function(addr2)
 
 if len(sys.argv) > 1:
     # Wait for input if any args provided (e.g. for GDB attach)
