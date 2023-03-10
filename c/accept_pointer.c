@@ -1,1 +1,1 @@
-void accept_pointer(void *p) {}
+void accept_pointer(void (*f)(void)) { f(); }
