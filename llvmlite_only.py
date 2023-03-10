@@ -3,6 +3,7 @@ import ctypes
 import tempfile
 import subprocess
 import os
+import sys
 
 # llvm.options.set_debug(True)
 
@@ -35,9 +36,12 @@ with tempfile.NamedTemporaryFile() as f:
     data = (ctypes.c_char*256).from_address(addr)
     f.write(data)
     f.flush()
-    objdump_cmd = f'objdump -D -b binary --adjust-vma=0x{addr:x} -m aarch64 {f.name}'
+    objdump_cmd = (f'objdump -D -b binary --adjust-vma=0x{addr:x} '
+                   f'-m aarch64 {f.name}')
     print(f"Running {objdump_cmd}...")
     cp = subprocess.run(objdump_cmd.split(' '), capture_output=True)
     print(cp.stdout.decode())
 
-input()
+if len(sys.argv) > 1:
+    # Wait for input if any args provided (e.g. for GDB attach)
+    input()
