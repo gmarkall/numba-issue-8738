@@ -1,7 +1,9 @@
-from ctypes import CFUNCTYPE, c_double
 import llvmlite.binding as llvm
+import ctypes
+import tempfile
+import subprocess
 
-#llvm.options.set_debug(True)
+# llvm.options.set_debug(True)
 
 llvm.initialize()
 llvm.initialize_native_target()
@@ -25,4 +27,12 @@ addr = engine.get_function_address(fname)
 
 print(f"Function is at 0x{addr:x}")
 
-input()
+with tempfile.NamedTemporaryFile() as f:
+    data = (ctypes.c_char*256).from_address(addr)
+    f.write(data)
+    f.flush()
+    objdump_cmd = f'objdump -D -b binary --adjust-vma=0x{addr:x} -m aarch64 {f.name}'
+    print(f"Running {objdump_cmd}...")
+    cp = subprocess.run(objdump_cmd.split(' '), capture_output=True)
+    print(cp.stdout.decode())
+
