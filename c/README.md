@@ -102,3 +102,27 @@ Invocation via `jitlink` works:
 ```
 llvm-jitlink -debug --entry=send_pointer2 accept_pointer.o send_pointer1.o send_pointer2.o
 ```
+
+## Potential fix:
+
+```diff
+diff --git a/llvm/lib/ExecutionEngine/RuntimeDyld/RuntimeDyldELF.cpp b/llvm/lib/ExecutionEngine/RuntimeDyld/RuntimeDyldELF.cpp
+index 3c7f4ec47eb8..205ee5273b27 100644
+--- a/llvm/lib/ExecutionEngine/RuntimeDyld/RuntimeDyldELF.cpp
++++ b/llvm/lib/ExecutionEngine/RuntimeDyld/RuntimeDyldELF.cpp
+@@ -2407,6 +2407,7 @@ Error RuntimeDyldELF::finalizeLoad(const ObjectFile &Obj,
+   }
+
+   GOTSectionID = 0;
++  GOTOffsetMap.clear();
+   CurrentGOTIndex = 0;
+
+   return Error::success();
+```
+
+Hypothesis: whenever the GOT section is cleared, the map from "Values" (i.e.
+symbols) to offsets in the GOT is not cleared, so it ends up polluted with
+stale entries from old objects - in the AArch64 case, a GOT entry to a symbol
+in the "current" object gets found by a subsequent object attempting to refer
+to that symbol, so the values (which are invalid for the current object) are
+re-used and it just writes gibberish when processing relocations.
