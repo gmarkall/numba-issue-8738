@@ -96,3 +96,9 @@ Stack dump:
 0.	Program arguments: /home/gmarkall/numbadev/install-llvm/main-20230310/bin/llvm-rtdyld --execute --entry send_pointer2 c/accept_pointer.o c/send_pointer1.o c/send_pointer2.o
 Segmentation fault (core dumped)
 ```
+
+Invocation via `jitlink` works:
+
+```
+llvm-jitlink -debug --entry=send_pointer2 accept_pointer.o send_pointer1.o send_pointer2.o
+```
