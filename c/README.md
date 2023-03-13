@@ -85,3 +85,14 @@ to `f1()`.
 The issue appears to be that GOT relocations are incorrectly handled
 when they refer to symbols defined as weak in the same object, where a
 definition already exists.
+
+## Running
+
+```
+llvm-rtdyld --execute --entry send_pointer2 c/accept_pointer.o c/send_pointer1.o c/send_pointer2.o
+loaded 'send_pointer2' at: 0xffffb18ac000
+PLEASE submit a bug report to https://github.com/llvm/llvm-project/issues/ and include the crash backtrace.
+Stack dump:
+0.	Program arguments: /home/gmarkall/numbadev/install-llvm/main-20230310/bin/llvm-rtdyld --execute --entry send_pointer2 c/accept_pointer.o c/send_pointer1.o c/send_pointer2.o
+Segmentation fault (core dumped)
+```
